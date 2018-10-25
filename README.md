@@ -4,7 +4,7 @@ Lib-fchat is a node js library for creating f-chat clients and making requests t
 **Note: This library is still in beta. The first full production release will be in version 1.2.0**
 
 ## Installation
-Note: Before installing, ensure you have the latest version of [node](https://nodejs.org/en/) installed and that the root directory of your node project is the current workign directory in your cli. 
+Note: Before installing, ensure you have the latest version of [node](https://nodejs.org/en/) installed and that the root of your node project is the current working directory in your cli. 
 ```sh
 $ npm install --save lib-fchat
 ```
