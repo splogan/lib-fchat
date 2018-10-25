@@ -16,18 +16,11 @@ const config = require('./config');
 
 const fchat = new Fchat(config);
 fchat.connect(process.env.ACCOUNT, process.env.PASSWORD, process.env.CHARACTER)
-.then(() => {
-  console.log('Websocket connected...');
-})
-.catch(err => {
-  console.log(`Woops: ${err}`);
-});
+.then(() => console.log('Websocket connected...'))
+.catch(err => console.log(`Woops: ${err}`));
 ```
 
 
 ## Documentation
 **Still a work in progress as of 10/24/2018**
 Documentation generated from the JSDoc style annotation in the source code can be found [here](http://htmlpreview.github.io/?https://github.com/splogan/lib-fchat/blob/master/docs/index.html) or in the **docs** directory of this repo.
-
-
-
