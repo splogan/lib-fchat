@@ -2,10 +2,6 @@ const fetch = require('node-fetch');
 const ws = require('ws');
 const { URLSearchParams } = require('url');
 
-/**
- * @constructor
- * @param {object} config An fchat configuration object
- */
 const fchat = function(config) {
   var tempProfileData = {};
   var commandFunctionMap = {};
@@ -31,16 +27,6 @@ const fchat = function(config) {
     chatops, channels, characters, friends, ignoreList, serverVariables
   }
 
-  /**
-   * @function connect
-   * @memberof fchat
-   * @description Retrieves a ticket using the provided credentials, opens a WebSocket connection, and identifies the client to the server
-   * @param {string} account An account or username for f-list.net
-   * @param {string} password The password for the specified account
-   * @param {string} character The desired login character
-   * @return {Promise} A promise that resolves when/if the socket opens (though before identification), does not return any parameters
-   * @instance
-   */
   this.connect = (account, password, character) => {
     clientCharacter = character;
 
@@ -67,14 +53,6 @@ const fchat = function(config) {
     });
   }
 
-  /**
-   * @function send
-   * @memberof fchat
-   * @description For lower level control of what is being sent through the WebSocket, sends a command to the server with cooresponding data
-   * @param {string} command A client command (ie. ADL, CDS, etc)
-   * @param {object} data The data to be sent with this command
-   * @instance
-   */
   this.send = (command, data) => {
     var message = data ? command + ' ' + JSON.stringify(data) : command;
     if (config.logging.clientCommands){
@@ -137,19 +115,6 @@ const fchat = function(config) {
     }
   }
 
-  /**
-   * @callback commandCallback
-   * @description Note: Replaces any previous callback assigned to this particular command using the on function
-   * @param {object} data A raw json object from the server
-   */
-  /**
-   * @function on
-   * @memberof fchat
-   * @description Listens for a specific client command and invokes a callback with its data
-   * @param {string} command A client command (ie. ADL, CDS, etc)
-   * @param {commandCallback} callback Callback which returns the data received
-   * @instance
-   */
   this.on = (command, func) => {
     commandFunctionMap[command] = func;
   }
@@ -485,23 +450,6 @@ const fchat = function(config) {
     return channels.filter(chan => chan.name!==channel);
   }
 
-
-  /**
-   * @function serverBan
-   * @memberof fchat
-   * @description Requests that the specified character be banned from the server, an abstraction of the ACB client command (requires chat op or higher)
-   * @param {string} character The name of the desired character 
-   * @instance
-   */
-  this.serverBan = (character) => this.send('ACB', { character });
-
-  /**
-   * @function promoteChatop
-   * @memberof fchat
-   * @description Requests that the specified character be promoted to chat op, an abstraction of the AOP client command (admin only)
-   * @param {string} character The name of the desired character
-   * @instance
-   */
   this.promoteChatop = (character) => this.send('AOP', { character });
 
   this.requestAlts = (character) => this.send('AWC', { character });
@@ -561,19 +509,7 @@ const fchat = function(config) {
 
 
 
-  /**
-   * This callback type is called `requestCallback` and is displayed as a global symbol.
-   *
-   * @callback chatopsCallback
-   * @param {array} chatops An array of chatops
-   */
-  /**
-   * @function onChatopsReceived
-   * @memberof fchat
-   * @description Receives a list of chatops from the server
-   * @param {chatopsCallback} callback Callback which returns a list of chatops whenever they are received from the server by the ADL command
-   * @instance
-   */
+
   this.onChatopsReceived = (func) => adlCallback = func;
   var adlCallback = (chatops) => {}
 
@@ -586,17 +522,6 @@ const fchat = function(config) {
   var cdsCallback = (channel, description) => {}
   this.onChannelDescription = (func) => cdsCallback = func;
 
-  /**
-   * @callback channelsCallback
-   * @param {array} channels An array of channels
-   */
-  /**
-   * @function onPublicChannelsReceived
-   * @memberof fchat
-   * @description Receives a list of public channels from the server
-   * @param {channelsCallback} callback Callback which returns a list of channels whenever they are received from the server by the CHA command
-   * @instance
-   */
   this.onPublicChannelsReceived = (func) => chaCallback = func;
   var chaCallback = (channels) => {}
 
