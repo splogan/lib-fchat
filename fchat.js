@@ -1,5 +1,6 @@
-var ws = require('ws');
-var EndpointManager = require('./endpointManager');
+const fetch = require('node-fetch');
+const ws = require('ws');
+const { URLSearchParams } = require('url');
 
 /**
  * @constructor
@@ -9,7 +10,6 @@ const fchat = function(config) {
   var tempProfileData = {};
   var commandFunctionMap = {};
 
-  var endpointManager = null;
   var socket = null;
 
   var chatops = [];
@@ -27,7 +27,6 @@ const fchat = function(config) {
   this.getFriends = () => friends;
   this.getIgnoreList = () => ignoreList;
   this.getServerVariables = () => serverVariables;
-  this.getEndpointManager = () => endpointManager;
   this.getFchatState = () => {
     chatops, channels, characters, friends, ignoreList, serverVariables
   }
@@ -43,11 +42,9 @@ const fchat = function(config) {
    * @instance
    */
   this.connect = (account, password, character) => {
-    console.log('Here we are...');
-    endpointManager = new EndpointManager(account, password, config.endpoint);
     clientCharacter = character;
 
-    return endpointManager.requestTicket().then(ticket => {
+    return requestTicket(config.endpoint.ticketUrl, account, password).then(ticket => {
       const allUrls = config.fchat.urls;
       const url = config.devMode ? allUrls.dev: allUrls.public;
       socket = new ws(url);
@@ -85,6 +82,33 @@ const fchat = function(config) {
     }
     
     socket.send(message);
+  }
+
+  /*** 
+   * Private ticket request method that accepts a url and credentials and returns a Promise that resolves with an f-chat ticket
+   * This method negates the need for using endpointManager
+  */
+  var requestTicket = (ticketUrl, account, password) => {
+    const FALLBACK_ERR = 'Unable to parse ticket response';
+    const form = new URLSearchParams();
+    form.append('account', account);
+    form.append('password', password);
+    form.append('no_characters', true);
+    form.append('no_friendsd', true);
+    form.append('no_bookmarks', true);
+
+    return fetch(ticketUrl, { 
+      method: 'POST', 
+      body: form
+    })
+    .then(res => res.json())
+    .then(json => {
+      if (json.ticket){
+        return Promise.resolve(json.ticket);
+      }
+
+      Promise.reject(json.error ? json.error : FALLBACK_ERR); 
+    });
   }
 
   var onMessage = (message) => {

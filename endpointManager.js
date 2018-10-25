@@ -69,19 +69,17 @@ module.exports = function(account, password, config) {
   //Method which actually makes the POSTs for ticket requests
   //Returns a promise which either resolves with the appropriate data or rejects with an error
   this.generalTicketRequest = (json) => {
+    const FALLBACK_ERR = 'Unable to parse ticket response';
     const url = this.config.ticketUrl;
-    const parseTicketResponseError = `Unable to parse response from ${url}. Expected ticket and/or error parameters`;
 
     return this.sendPOST(url, json).then(res => {
       if (res.ticket){
         this.ticket = res.ticket;
         this.ticketTimestamp = this.getUnixTime();
         return Promise.resolve(res);
-      }else if (res.error){
-        return Promise.reject(res.error);
-      }else {
-        return Promise.reject(parseTicketResponseError);
       }
+      
+      return Promise.reject(res.error ? res.error : FALLBACK_ERR);
     });
   }
 
