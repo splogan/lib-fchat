@@ -1,0 +1,13 @@
+{
+  "name": "fchat-connect",
+  "version": "1.0.0",
+  "description": "An example project demonstrating how to connect to fchat using lib-fchat",
+  "author": "Slogan (splogan9@gmail.com)",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^6.1.0",
+    "lib-fchat": "^1.0.2"
+  }
+}

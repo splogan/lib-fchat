@@ -43,6 +43,7 @@ const fchat = function(config) {
    * @instance
    */
   this.connect = (account, password, character) => {
+    console.log('Here we are...');
     endpointManager = new EndpointManager(account, password, config.endpoint);
     clientCharacter = character;
 
