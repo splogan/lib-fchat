@@ -1,6 +1,6 @@
 require('dotenv').config();
 const Fchat = require('lib-fchat/fchat');
-const config = require('./fchatConfig');
+const config = require('./config');
 
 const fchat = new Fchat(config);
 
