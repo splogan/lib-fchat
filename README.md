@@ -26,4 +26,5 @@ fchat.connect(process.env.ACCOUNT, process.env.PASSWORD, process.env.CHARACTER)
 
 ## Documentation
 **Still a work in progress as of 10/24/2018**
-Documentation generated from the JSDoc style annotation in the source code can be found [here](http://htmlpreview.github.io/?https://github.com/splogan/lib-fchat/blob/master/docs/index.html) or in the **docs** directory of this repo.
+-  All documentation and coding examples are [here](https://github.com/splogan/lib-fchat-docs)
+- JSDoc for the fchat class can be found here [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/splogan/lib-fchat-docs/master/docs/fchat.html) or in the **docs** directory of lib-fchat-docs
