@@ -9,14 +9,12 @@ Note: Before installing, ensure you have the latest version of [node](https://no
 $ npm install --save lib-fchat
 ```
 ## Example
-Using a configuration object loaded from a json file and credentials stored in a .env file, this example simply connects to f-chat and logs output to the console.
+Using lib-fchat's default configurations and credentials stored in a .env file, this example simply connects to f-chat and logs output to the console.
 
 ```js
 require('dotenv').config();
 const Fchat = require('lib-fchat/fchat');
-const config = require('./config');
-
-const fchat = new Fchat(config);
+const fchat = new Fchat();
 
 fchat.connect(process.env.ACCOUNT, process.env.PASSWORD, process.env.CHARACTER)
 .then(() => console.log('Websocket connected...'))
@@ -25,6 +23,6 @@ fchat.connect(process.env.ACCOUNT, process.env.PASSWORD, process.env.CHARACTER)
 
 
 ## Documentation
-**Still a work in progress as of 10/24/2018**
+**Still a work in progress as of 10/24/2018, fchat class documentation about 20% complete**
 -  All documentation and coding examples are [here](https://github.com/splogan/lib-fchat-docs)
 - JSDoc for the fchat class can be found here [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/splogan/lib-fchat-docs/master/docs/fchat.html) or in the **docs** directory of lib-fchat-docs

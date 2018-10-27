@@ -1,0 +1,18 @@
+{
+  "client": {
+    "name": "Unspecified Lib-fchat Client",
+    "version": "1.0.0"
+  },
+  "urls": {
+    "fchatPublic": "ws://chat.f-list.net:9722",
+    "fchatDev": "ws://chat.f-list.net:8722",
+    "ticket": "https://www.f-list.net/json/getApiTicket.php"
+  },
+  "options": {
+    "autoPing": true,
+    "devMode": true,
+    "joinOnInvite": false,
+    "logServerCommands": false,
+    "logClientCommands": false
+  }
+}

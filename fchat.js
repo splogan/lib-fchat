@@ -1,8 +1,17 @@
 const fetch = require('node-fetch');
 const ws = require('ws');
 const { URLSearchParams } = require('url');
+const defaultConfig = require('./config/fchatDefaultConfig');
 
+/**
+ * @constructor
+ * @param {object} config An fchat configuration object
+ */
 const fchat = function(config) {
+  if (!config){
+    config = {};
+  }
+  
   var tempProfileData = {};
   var commandFunctionMap = {};
 
@@ -15,8 +24,6 @@ const fchat = function(config) {
   var ignoreList = [];
   var serverVariables = {};
 
-  var clientCharacter = '';
-
   this.getChatops = () => chatops;
   this.getChannels = () => channels;
   this.getCharacters = () => characters;
@@ -27,12 +34,38 @@ const fchat = function(config) {
     chatops, channels, characters, friends, ignoreList, serverVariables
   }
 
-  this.connect = (account, password, character) => {
-    clientCharacter = character;
+  var client = Object.assign(defaultConfig.client, config.client);
+  this.setClientName = (name) => client.name = name;
+  this.setClientVersion = (version) => client.version = version;
+  this.setClientCharacter = (character) => client.character = character;
 
-    return requestTicket(config.endpoint.ticketUrl, account, password).then(ticket => {
-      const allUrls = config.fchat.urls;
-      const url = config.devMode ? allUrls.dev: allUrls.public;
+  var urls = Object.assign(defaultConfig.urls, config.urls);
+  this.setTicketUrl = (url) => urls.ticket = url;
+  this.setFchatUrl = (url) => urls.fchatPublic = url;
+  this.setFchatDevUrl = (url) => urls.fchatDev = url;
+
+  var options = Object.assign(defaultConfig.options, config.options);
+  this.autoPing = (bool) => options.autoPing = bool;
+  this.setDevMode = (bool) => options.devMode = bool;
+  this.joinOnInvite = (bool) => options.joinOnInvite = bool;
+  this.logServerCommands = (bool) => options.logServerCommands = bool;
+  this.logClientCommands = (bool) => options.logClientCommands = bool;
+
+  /**
+   * @function connect
+   * @memberof fchat
+   * @description Retrieves a ticket using the provided credentials, opens a WebSocket connection, and identifies the client to the server
+   * @param {string} account An account or username for f-list.net
+   * @param {string} password The password for the specified account
+   * @param {string} character The desired login character
+   * @return {Promise} A promise that resolves when/if the socket opens (though before identification), does not return any parameters
+   * @instance
+   */
+  this.connect = (account, password, character) => {
+    client.character = character;
+
+    return requestTicket(urls.ticket, account, password).then(ticket => {
+      const url = options.devMode ? urls.fchatDev : urls.fchatPublic;
       socket = new ws(url);
 
       socket.on('open', () => {
@@ -43,8 +76,8 @@ const fchat = function(config) {
           account, 
           ticket, 
           character, 
-          cname: config.client.name, 
-          cversion: config.client.version 
+          cname: client.name, 
+          cversion: client.version 
         });
       });
 
@@ -53,9 +86,17 @@ const fchat = function(config) {
     });
   }
 
+  /**
+   * @function send
+   * @memberof fchat
+   * @description For lower level control of what is being sent through the WebSocket, sends a command to the server with cooresponding data
+   * @param {string} command A client command (ie. ADL, CDS, etc)
+   * @param {object} data The data to be sent with this command
+   * @instance
+   */
   this.send = (command, data) => {
     var message = data ? command + ' ' + JSON.stringify(data) : command;
-    if (config.logging.clientCommands){
+    if (options.logClientCommands){
       console.log(`>> ${message}`);
     }
     
@@ -90,7 +131,7 @@ const fchat = function(config) {
   }
 
   var onMessage = (message) => {
-    if (config.logging.serverCommands){
+    if (options.logServerCommands){
       console.log(`<< ${message}`);
     }
 
@@ -115,6 +156,21 @@ const fchat = function(config) {
     }
   }
 
+  /**
+   * @callback commandCallback
+   * @description Note: Replaces any previous callback assigned to this particular command using the on function
+   * @param {object} data A raw json object from the server
+   */
+  /**
+   * @function on
+   * @memberof fchat
+   * @example 
+   * fchat.on('CHA', data => console.log(JSON.stringify(data)));
+   * @description Listens for a specific client command and invokes a callback with its data
+   * @param {string} command A client command (ie. ADL, CDS, etc)
+   * @param {commandCallback} callback Callback which returns the data received
+   * @instance
+   */
   this.on = (command, func) => {
     commandFunctionMap[command] = func;
   }
@@ -270,7 +326,7 @@ const fchat = function(config) {
   this.onJCH = (data) => {
     const characterName = data.character.identity;
       
-    if (clientCharacter===characterName){
+    if (characterName===client.character){
       channels.push({
         name: data.channel,
         title: data.title
@@ -292,7 +348,7 @@ const fchat = function(config) {
   }
 
   this.onLCH = (data) => {
-    if (clientCharacter===data.character){
+    if (data.character===client.character){
       removeChannel(data.channel);
     }else {
       const channel = findChannel(data.channel);
@@ -317,7 +373,7 @@ const fchat = function(config) {
   }
 
   this.onNLN = (data) => {
-    if (data.identity===clientCharacter){
+    if (data.identity===client.character){
       lisCallback(characters);
     }else {
       data.statusmsg = '';
@@ -333,7 +389,7 @@ const fchat = function(config) {
   }
 
   this.onPIN = (unused) => {
-    if (config.autoPing){
+    if (options.autoPing){
       this.ping();
     }
 
@@ -450,16 +506,99 @@ const fchat = function(config) {
     return channels.filter(chan => chan.name!==channel);
   }
 
+
+  /**
+   * @function serverBan
+   * @memberof fchat
+   * @description Requests that the specified character be banned from the server, sends an ACB client command (requires chat op or higher)
+   * @param {string} character The name of the character 
+   * @instance
+   */
+  this.serverBan = (character) => this.send('ACB', { character });
+
+  /**
+   * @function promoteChatop
+   * @memberof fchat
+   * @description Requests that the specified character be promoted to chatop, sends an AOP client command (admin only)
+   * @param {string} character The name of the character
+   * @instance
+   */
   this.promoteChatop = (character) => this.send('AOP', { character });
 
+  /**
+   * @function requestAlts
+   * @memberof fchat
+   * @description Requests a list of the specified character's alts, sends an AWC client command
+   * @param {string} character The name of the desired character
+   * @instance
+   */
   this.requestAlts = (character) => this.send('AWC', { character });
+
+  /**
+   * @function broadcast
+   * @memberof fchat
+   * @description Broadcasts a message to all characters in chat, sends an BRO client command
+   * @param {string} message The message to broadcast
+   * @instance
+   */
   this.broadcast = (message) => this.send('BRO', { message });
-  this.requestChannelBanlist = (channel) => this.send('CBL', { channel });
+
+  /**
+   * @function requestChannelBanList
+   * @memberof fchat
+   * @description Requests a list of all characters banned from the specified channel, sends a CBL client command
+   * @param {string} channel The name of the channel
+   * @instance
+   */
+  this.requestChannelBanList = (channel) => this.send('CBL', { channel });
+
+  /**
+   * @function channelBan
+   * @memberof fchat
+   * @description Bans the specified character from a channel, sends a CBU client command
+   * @param {string} character The name of the character
+   * @param {string} channel The name of the channel
+   * @instance
+   */
   this.channelBan = (character, channel) => this.send('CBU', { character, channel });
+
+  /**
+   * @function createPrivateChannel
+   * @memberof fchat
+   * @description Creates a new private channel of the name specified, sends a CCR client command
+   * @param {string} channel The name of the channel
+   * @instance
+   */
   this.createPrivateChannel = (channel) => this.send('CCR', { channel });
+
+  /**
+   * @function setChannelDescription
+   * @memberof fchat
+   * @description Sets a specified channel's description, sends a CDS client command
+   * @param {string} channel The name of the channel
+   * @param {string} description The desired description for the channel
+   * @instance
+   */
   this.setChannelDescription = (channel, description) => this.send('CDS', { channel, description });
+
+  /**
+   * @function requestPublicChannels
+   * @memberof fchat
+   * @description Requests a list of all public (official) channels, sends a CHA client command
+   * @instance
+   */
   this.requestPublicChannels = () => this.send('CHA', null);
+
+  /**
+   * @function sendChannelInvite
+   * @memberof fchat
+   * @description Invites a character to the specified closed channel, sends a CIU client command
+   * @param {string} channel The name of the channel
+   * @param {string} character The name of the character
+   * @instance
+   */
   this.sendChannelInvite = (channel, character) => this.send('CIU', { channel, character });
+
   this.channelKick = (channel, character) => this.send('CKU', { channel, character });
   this.promoteChanop = (channel, character) => this.send('COA', { channel, character });
   this.requestChanops = (channel) => this.send('COL', { channel });
@@ -500,43 +639,161 @@ const fchat = function(config) {
   this.reportIssue = (report, character) => this.send('SFC', { action: 'report', report, character });
   this.setStatus = (status, statusmsg) => this.send('STA', { status, statusmsg });
   this.serverTimeout = (character, time, reason) => this.send('TMO', { character, time, reason });
-  this.setTypingStatus = (status) => this.send('TPN', { character: clientCharacter, status });
+  this.setTypingStatus = (status) => this.send('TPN', { character: client.character, status });
   this.serverUnban = (character) => this.send('UNB', { character });
   this.requestStats = () => this.send('UPT', null);
 
 
 
 
-
-
-
+  /**
+   * @callback chatopsCallback
+   * @param {array} chatops An array of all chatops
+   */
+  /**
+   * @function onChatopsReceived
+   * @memberof fchat
+   * @description Receives a list of chatops
+   * @param {chatopsCallback} callback Callback which returns a list of chatops, received from the server by the ADL command
+   * @instance
+   */
   this.onChatopsReceived = (func) => adlCallback = func;
   var adlCallback = (chatops) => {}
 
-  var aopCallback = (chatop) => {}
+  /**
+   * @callback chatopPromotionCallback
+   * @param {string} chatop The name of the chatop promoted (character)
+   */
+  /**
+   * @function onChatopPromoted
+   * @memberof fchat
+   * @description Receives notification that a character has been promoted to chatop
+   * @param {chatopPromotionCallback} callback Callback which returns the name of the promoted character, received from the server by the ADL command
+   * @instance
+   */
   this.onChatopPromoted = (func) => aopCallback = func;
+  var aopCallback = (chatop) => {}
 
-  var broCallback = (message) => {}
+
+  /**
+   * @callback broadcastCallback
+   * @param {string} message The broadcast message
+   */
+  /**
+   * @function onBroadcast
+   * @memberof fchat
+   * @description Receives a broadcast sent from staff
+   * @param {broadcastCallback} callback Callback which returns broadcast message, received from the server by the BRO command
+   * @instance
+   */
   this.onBroadcast = (func) => broCallback = func;
-
-  var cdsCallback = (channel, description) => {}
+  var broCallback = (message) => {}
+  
+  /**
+   * @callback channelDescriptionCallback
+   * @param {string} channel A channel name
+   * @param {string} description A description of the channel
+   */
+  /**
+   * @function onChannelDescription
+   * @memberof fchat
+   * @description Receives the description of a channel (either after the client enters the channel or if the description changes)
+   * @param {channelDescriptionCallback} callback Callback which returns a channel and its description, received from the server by the CDS command
+   * @instance
+   */
   this.onChannelDescription = (func) => cdsCallback = func;
+  var cdsCallback = (channel, description) => {}
 
+  /**
+   * @callback publicChannelsCallback
+   * @param {array} channels An array of public channels
+   */
+  /**
+   * @function onPublicChannelsReceived
+   * @memberof fchat
+   * @description Receives a list of public channels
+   * @param {publicChannelsCallback} callback Callback which returns an array of public channels, received from the server by the CHA command
+   * @instance
+   */
   this.onPublicChannelsReceived = (func) => chaCallback = func;
   var chaCallback = (channels) => {}
 
-  var ciuCallback = (sender, title, name) =>  {}
-  this.onChannelInviteReceived = (func) => ciuCallback = func;
   
-  var cbuCallback = (operator, channel, character) => {}
+  /**
+   * @callback channelInviteCallback
+   * @param {string} sender The name of the character sending the channel invite
+   * @param {string} title The channel title
+   * @param {string} name The channel name
+   */
+  /**
+   * @function onChannelInvite
+   * @memberof fchat
+   * @description Receives an invitation to join a channel
+   * @param {channelInviteCallback} callback Callback which returns the name of the sender as well as the name and title of the channel, received from the server by the CIU command
+   * @instance
+   */
+  this.onChannelInvite = (func) => ciuCallback = func;
+  var ciuCallback = (sender, title, name) =>  {}
+
+  /**
+   * @callback channelBanCallback
+   * @param {string} operator The name of the operator issuing the ban
+   * @param {string} channel The channel name
+   * @param {string} character The banned character
+   */
+  /**
+   * @function onChannelBan
+   * @memberof fchat
+   * @description Receives notification that a character has been banned from the specified channel
+   * @param {channelBanCallback} callback Callback which returns the name of the banned character, the name of the operator who issued the ban, and the channel name, received from the server by the CBU command
+   * @instance
+   */
   this.onChannelBan = (func) => cbuCallback = func;
+  var cbuCallback = (operator, channel, character) => {}
 
-  var ckuCallback = (operator, channel, character) => {}
+  /**
+   * @callback channelKickCallback
+   * @param {string} operator The name of the operator issuing the kick
+   * @param {string} channel The channel name
+   * @param {string} character The kicked character
+   */
+  /**
+   * @function onChannelKick
+   * @memberof fchat
+   * @description Receives notification that a character has been kicked from the specified channel
+   * @param {channelKickCallback} callback Callback which returns the name of the kicked character, the name of the operator who issued the kick, and the associated channel, received from the server by the CKU command
+   * @instance
+   */
   this.onChannelKick = (func) => ckuCallback = func;
+  var ckuCallback = (operator, channel, character) => {}
 
+  /**
+   * @callback chanopPromotedCallback
+   * @param {string} character The name of the character promoted
+   * @param {string} channel The name of the channel in which they were promoted
+   */
+  /**
+   * @function onChanopPromoted
+   * @memberof fchat
+   * @description Receives notification that a character has been promoted to a chanop in the specified channel
+   * @param {chanopPromotedCallback} callback Callback which returns the name of character promoted and the channel name, received from the server by the COA command
+   * @instance
+   */
   var coaCallback = (character, channel) => {}
   this.onChanopPromoted = (func) => coaCallback = func;
 
+  /**
+   * @callback chanopsReceivedCallback
+   * @param {string} channel The name of a channel
+   * @param {string} oplist An array of the chanops
+   */
+  /**
+   * @function onChanopsReceived
+   * @memberof fchat
+   * @description Receives a list of all chanops for a specified channel
+   * @param {chanopsReceivedCallback} callback Callback which returns the name of the channel and list of all chanops, received from the server by the COL command
+   * @instance
+   */
   var colCallback = (channel, oplist) => {}
   this.onChanopsReceived = (func) => colCallback = func;
 

@@ -1,7 +1,7 @@
 {
   "name": "lib-fchat",
-  "version": "1.0.3",
-  "description": "An library for creating f-chat clients with additional utilities for fetching data from f-list json endpoints",
+  "version": "1.0.5",
+  "description": "A node js library for creating f-chat clients and making requests to f-list api endpoints",
   "author": "Slogan (splogan9@gmail.com)",
   "dependencies": {
     "node-fetch": "^2.2.0",
