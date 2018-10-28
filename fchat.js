@@ -24,10 +24,42 @@ const fchat = function(config) {
   var ignoreList = [];
   var serverVariables = {};
 
+  /**
+   * @function getChatops
+   * @memberof fchat
+   * @description Returns all current chatops
+   * @return {Array} An array of chatops
+   * @instance
+   */
   this.getChatops = () => chatops;
-  this.getChannels = () => channels;
+
+  /**
+   * @function getJoinedChannels
+   * @memberof fchat
+   * @description Returns a list of all channels that the client is currently joined into (note that the fchat object does not track the global list of all public and private channels)
+   * @return {Array} An array of channel objects
+   * @instance
+   */
+  this.getJoinedChannels = () => channels;
+
+  /**
+   * @function getCharacters
+   * @memberof fchat
+   * @description Returns a list of all characters currently logged into the chat, including their gender, status, status message, and typing status
+   * @return {Array} An array of character objects
+   * @instance
+   */
   this.getCharacters = () => characters;
+
+  /**
+   * @function getFriends
+   * @memberof fchat
+   * @description Returns a list of the client character's friends
+   * @return {Array} An array of character names
+   * @instance
+   */
   this.getFriends = () => friends;
+
   this.getIgnoreList = () => ignoreList;
   this.getServerVariables = () => serverVariables;
   this.getFchatState = () => {
@@ -198,6 +230,10 @@ const fchat = function(config) {
   }
 
   this.onCIU = (data) => {
+    if (options.joinOnInvite){
+      this.joinChannel(data.name);
+    }
+
     ciuCallback(data.sender, data.title, data.name);
   }
 
@@ -268,7 +304,7 @@ const fchat = function(config) {
   }
 
   this.onFLN = (data) => {
-    characters = characters.filter(char => char!=data.character);
+    characters = characters.filter(char => char.name!==data.character);
     flnCallback(data.character);
   }
 
@@ -361,7 +397,15 @@ const fchat = function(config) {
   }
 
   this.onLIS = (data) => {
-    mapCharacterList(data.characters).forEach(char => characters.push(char));
+    data.characters.forEach(data => {
+      characters.push({
+        name: data[0],
+        gender:  data[1],
+        status: data[2],
+        statusmsg: data[3],
+        typing: 'clear'
+      });
+    });
   }
 
   this.onLRP = (data) => {
@@ -376,9 +420,13 @@ const fchat = function(config) {
     if (data.identity===client.character){
       lisCallback(characters);
     }else {
-      data.statusmsg = '';
-      data.typing = 'clear';
-      characters.push(data);
+      characters.push({
+        name: data.identity,
+        gender: data.gender,
+        status: data.status,
+        statusmsg: '',
+        typing: 'clear'
+      });
     }
 
     nlnCallback(data.identity, data.gender, data.status);
@@ -482,20 +530,8 @@ const fchat = function(config) {
     serverVariables[data.variable] = data.value;
   }
 
-  var mapCharacterList = (characters) => {
-    return characters.map(data => {
-      return {
-        status: data[2],
-        identity: data[0],
-        gender:  data[1],
-        statusmsg: data[3],
-        typing: 'clear'
-      }
-    });
-  }
-
   var findCharacter = (character) => {
-    return characters.find(char => char.identity===character);
+    return characters.find(char => char.name===character);
   }
 
   var findChannel = (channel) => {
@@ -514,7 +550,9 @@ const fchat = function(config) {
    * @param {string} character The name of the character 
    * @instance
    */
-  this.serverBan = (character) => this.send('ACB', { character });
+  this.serverBan = (character) => {
+    this.send('ACB', { character });
+  }
 
   /**
    * @function promoteChatop
@@ -523,7 +561,9 @@ const fchat = function(config) {
    * @param {string} character The name of the character
    * @instance
    */
-  this.promoteChatop = (character) => this.send('AOP', { character });
+  this.promoteChatop = (character) => {
+    this.send('AOP', { character });
+  }
 
   /**
    * @function requestAlts
@@ -532,7 +572,9 @@ const fchat = function(config) {
    * @param {string} character The name of the desired character
    * @instance
    */
-  this.requestAlts = (character) => this.send('AWC', { character });
+  this.requestAlts = (character) => {
+    this.send('AWC', { character });
+  }
 
   /**
    * @function broadcast
@@ -541,7 +583,9 @@ const fchat = function(config) {
    * @param {string} message The message to broadcast
    * @instance
    */
-  this.broadcast = (message) => this.send('BRO', { message });
+  this.broadcast = (message) => {
+    this.send('BRO', { message });
+  }
 
   /**
    * @function requestChannelBanList
@@ -550,7 +594,9 @@ const fchat = function(config) {
    * @param {string} channel The name of the channel
    * @instance
    */
-  this.requestChannelBanList = (channel) => this.send('CBL', { channel });
+  this.requestChannelBanList = (channel) => {
+    this.send('CBL', { channel });
+  }
 
   /**
    * @function channelBan
@@ -560,7 +606,9 @@ const fchat = function(config) {
    * @param {string} channel The name of the channel
    * @instance
    */
-  this.channelBan = (character, channel) => this.send('CBU', { character, channel });
+  this.channelBan = (character, channel) => {
+    this.send('CBU', { character, channel });
+  }
 
   /**
    * @function createPrivateChannel
@@ -569,7 +617,9 @@ const fchat = function(config) {
    * @param {string} channel The name of the channel
    * @instance
    */
-  this.createPrivateChannel = (channel) => this.send('CCR', { channel });
+  this.createPrivateChannel = (channel) => {
+    this.send('CCR', { channel });
+  }
 
   /**
    * @function setChannelDescription
@@ -579,7 +629,9 @@ const fchat = function(config) {
    * @param {string} description The desired description for the channel
    * @instance
    */
-  this.setChannelDescription = (channel, description) => this.send('CDS', { channel, description });
+  this.setChannelDescription = (channel, description) => {
+    this.send('CDS', { channel, description });
+  }
 
   /**
    * @function requestPublicChannels
@@ -587,7 +639,9 @@ const fchat = function(config) {
    * @description Requests a list of all public (official) channels, sends a CHA client command
    * @instance
    */
-  this.requestPublicChannels = () => this.send('CHA', null);
+  this.requestPublicChannels = () => {
+    this.send('CHA', null);
+  }
 
   /**
    * @function sendChannelInvite
@@ -597,9 +651,22 @@ const fchat = function(config) {
    * @param {string} character The name of the character
    * @instance
    */
-  this.sendChannelInvite = (channel, character) => this.send('CIU', { channel, character });
+  this.sendChannelInvite = (channel, character) => {
+    this.send('CIU', { channel, character });
+  }
 
-  this.channelKick = (channel, character) => this.send('CKU', { channel, character });
+  /**
+   * @function channelKick
+   * @memberof fchat
+   * @description Kicks a character from the specified channel, sends a CKU client command
+   * @param {string} channel The name of the channel
+   * @param {string} character The name of the character
+   * @instance
+   */
+  this.channelKick = (channel, character) => {
+    this.send('CKU', { channel, character });
+  }
+
   this.promoteChanop = (channel, character) => this.send('COA', { channel, character });
   this.requestChanops = (channel) => this.send('COL', { channel });
   this.demoteChanop = (channel, character) => this.send('COR', { channel, character });
@@ -797,6 +864,17 @@ const fchat = function(config) {
   var colCallback = (channel, oplist) => {}
   this.onChanopsReceived = (func) => colCallback = func;
 
+  /**
+   * @callback userCountReceivedCallback
+   * @param {int} userCount The number of users in chat
+   */
+  /**
+   * @function onUserCountReceived
+   * @memberof fchat
+   * @description Receives the number of users currently connected to the chat, after the client identifies with the server
+   * @param {userCountReceivedCallback} callback Callback which returns the number of users in chat, received from the server by the CON command
+   * @instance
+   */
   var conCallback = (count) => {}
   this.onUserCountReceived = (func) => conCallback = func;
 
