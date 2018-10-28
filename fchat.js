@@ -83,6 +83,14 @@ const fchat = function(config) {
   this.logServerCommands = (bool) => options.logServerCommands = bool;
   this.logClientCommands = (bool) => options.logClientCommands = bool;
 
+  this.findCharacter = (character) => {
+    return characters.find(char => char.name===character);
+  }
+
+  this.findChannel = (channel) => {
+    return channels.find(chan => chan.name===channel);
+  }
+  
   /**
    * @function connect
    * @memberof fchat
@@ -397,7 +405,7 @@ const fchat = function(config) {
   }
 
   this.onLIS = (data) => {
-    data.characters.forEach(data => {
+    data.characters.forEach(char => {
       characters.push({
         name: data[0],
         gender:  data[1],
@@ -530,13 +538,7 @@ const fchat = function(config) {
     serverVariables[data.variable] = data.value;
   }
 
-  var findCharacter = (character) => {
-    return characters.find(char => char.name===character);
-  }
 
-  var findChannel = (channel) => {
-    return channels.find(chan => chan.name===channel);
-  }
 
   var removeChannel = (channel) => {
     return channels.filter(chan => chan.name!==channel);
