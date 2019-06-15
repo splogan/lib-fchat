@@ -9,6 +9,6 @@
   "author": "Sid",
   "dependencies": {
     "dotenv": "^8.0.0",
-    "lib-fchat": "^1.2.0"
+    "lib-fchat": "^1.2.3"
   }
 }

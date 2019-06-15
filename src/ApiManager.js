@@ -1,6 +1,5 @@
 import fetch from "node-fetch";
 import { URLSearchParams } from "url";
-import errors from "./config/errors";
 
 export default class ApiManager {
   constructor(config, credentials) {
@@ -61,7 +60,7 @@ export default class ApiManager {
   async sendRequest(endpointName, json = {}) {
     var endpoint = this.config.endpoints[endpointName];
     if (!endpoint) {
-      return Promise.reject(`libfchat::${errors.unknownEndpoint}`)
+      return Promise.reject("libfchat::Specified endpoint not found in the api config")
     }
 
     if (!this.config.noAccountRequired.includes(endpointName)) {

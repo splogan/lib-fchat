@@ -1,7 +1,6 @@
 import ws from "ws";
 import fetch from "node-fetch";
 import { URLSearchParams } from "url";
-import errors from "./config/errors";
 
 export default class FchatBasic {
   constructor(config, credentials) {
@@ -98,7 +97,7 @@ export default class FchatBasic {
         try {
           data = JSON.parse(message.substring(4));
         }catch(err) {
-          this.handleError(`libfchat::${errors.jsonParseError}`);
+          this.handleError("libfchat::Unable to parse command");
         }
       }
 

@@ -1,0 +1,51 @@
+{
+  "fchat": {
+    "client": {
+      "name": "Unspecified Libfchat Client",
+      "version": "0.0.0"
+    },
+    "url": "wss://chat.f-list.net/chat2:9799",
+    "options": {
+      "autoPing": true,
+      "joinOnInvite": false
+    }
+  },
+  "api": {
+    "apiBaseUrl": "https://www.f-list.net/json",
+    "expirationPeriod": 1800,
+    "noAccountRequired": [
+      "getApiTicket",
+      "infoList",
+      "kinkList",
+      "mappingList"
+    ],
+    "endpoints": {
+      "getApiTicket": "/getApiTicket.php",
+      "bookmarkAdd": "/api/bookmark-add.php",
+      "bookmarkList": "/api/bookmark-list.php",
+      "bookmarkRemove": "/api/bookmark-remove.php",
+      "characterData": "/api/character-data.php",
+      "characterList": "/api/character-list.php",
+      "characterFriends": "/api/character-friends.php",
+      "characterImages": "/api/character-images.php",
+      "characterMemoGet": "/api/character-memo-get2.php",
+      "characterMemoSave": "/api/character-memo-save.php",
+      "characterGuestbook": "/api/character-guestbook.php",
+      "groupList": "/api/group-list.php",
+      "ignoreList": "/api/ignore-list.php",
+      "infoList": "/api/info-list.php",
+      "kinkList":  "/api/kink-list.php",
+      "mappingList": "/api/mapping-list.php",
+      "friendBookmarkLists": "/api/friend-bookmark-lists.php",
+      "friendList": "/api/friend-list.php",
+      "friendRemove":  "/api/friend-remove.php",
+      "requestAccept": "/api/request-accept.php",
+      "requestCancel": "/api/request-cancel.php",
+      "requestDeny": "/api/request-deny.php",
+      "requestList": "/api/request-list.php",
+      "requestPending": "/api/request-pending.php",
+      "requestSend": "/api/request-send2.php",
+      "reportSubmit": "/api/report-submit.php"
+    }
+  }
+}
