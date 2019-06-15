@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 import { URLSearchParams } from "url";
-import errors from "../config/errors";
+import errors from "./config/errors";
 
 export default class ApiManager {
   constructor(config, credentials) {

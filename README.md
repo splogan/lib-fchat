@@ -18,9 +18,3 @@ fchat.connect(process.env.ACCOUNT, process.env.PASSWORD, process.env.CHARACTER)
 .then(() => console.log('Websocket connected...'))
 .catch(err => console.log(`Woops: ${err}`));
 ```
-
-
-## Documentation
-**Still a work in progress as of 10/24/2018, fchat class documentation about 20% complete**
--  All documentation and coding examples are [here](https://github.com/splogan/lib-fchat-docs)
-- JSDoc for the fchat class can be found here [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/splogan/lib-fchat-docs/master/docs/fchat.html) or in the **docs** directory of lib-fchat-docs

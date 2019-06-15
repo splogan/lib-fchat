@@ -1,12 +1,16 @@
 {
   "name": "lib-fchat",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A node js library for creating f-chat clients and making requests to f-list api endpoints",
   "author": "Sid",
   "dependencies": {
-    "esm": "^3.2.25",
     "node-fetch": "^2.6.0",
     "ws": "^7.0.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "babel-plugin-add-module-exports": "^1.0.2"
+  }
 }

@@ -1,7 +1,7 @@
 import ws from "ws";
 import fetch from "node-fetch";
 import { URLSearchParams } from "url";
-import errors from "../config/errors";
+import errors from "./config/errors";
 
 export default class FchatBasic {
   constructor(config, credentials) {

@@ -7,7 +7,7 @@
     "url": "wss://chat.f-list.net/chat2:9799",
     "options": {
       "autoPing": true,
-      "joinOnInvite": true
+      "joinOnInvite": false
     }
   },
   "api": {
