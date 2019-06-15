@@ -7,14 +7,27 @@ Note: Before installing, ensure you have the latest version of [node](https://no
 $ npm install --save lib-fchat
 ```
 ## Example
-Using lib-fchat's default configurations and credentials stored in a .env file, this example simply connects to f-chat and logs output to the console.
+Using a config file and credentials stored in a .env file, this example simply connects to f-chat and logs output to the console when the websocket is connected and when identification with the server is complete
 
 ```js
-require('dotenv').config();
-const Fchat = require('lib-fchat/fchat');
-const fchat = new Fchat();
+require("dotenv").config();
 
-fchat.connect(process.env.ACCOUNT, process.env.PASSWORD, process.env.CHARACTER)
-.then(() => console.log('Websocket connected...'))
-.catch(err => console.log(`Woops: ${err}`));
+const Fchat = require("lib-fchat/lib/Fchat");
+const config = require("./config");
+
+var credentials = {
+  account: process.env.ACCOUNT,
+  password: process.env.PASSWORD
+}
+
+var fchat = new Fchat(config, credentials);
+fchat.connect(process.env.CHARACTER);
+
+fchat.onOpen(ticket => {
+  console.log(`Websocket connection opened. Identifying with ticket: ${ticket}`);
+});
+
+fchat.on("IDN", () => {
+  console.log(`Identification as ${fchat.user.character} Successful!`);
+});
 ```
