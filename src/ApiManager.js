@@ -2,12 +2,15 @@ import fetch from "node-fetch";
 import { URLSearchParams } from "url";
 
 export default class ApiManager {
-  constructor(config, credentials) {
+  constructor(config, account, password) {
     this.config = config;
     
-    if (credentials) {
-      this.account = credentials.account;
-      this.password = credentials.password;
+    if (account) {
+      this.account = account;
+    }
+
+    if (password) {
+      this.password = password;
     }
   }
 
@@ -50,7 +53,7 @@ export default class ApiManager {
   
       this.ticket = await this.ticketRequest;
       this.expirationTime = Date.now() + this.config.expirationPeriod * 1000; //Calculate the time at which the ticket will expire
-      this.ticketRequest = null; 
+      this.ticketRequest = null;
     }
 
     return this.ticket;

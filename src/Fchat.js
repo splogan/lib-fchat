@@ -1,8 +1,8 @@
 import FchatBasic from "./FchatBasic";
 
 export default class Fchat extends FchatBasic {
-  constructor(config, credentials) {
-    super(config, credentials);
+  constructor(account, password, config) {
+    super(account, password, config);
 
     this.characters = {};
     this.channels = {};

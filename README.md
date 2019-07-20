@@ -15,13 +15,8 @@ require("dotenv").config();
 const Fchat = require("lib-fchat/lib/Fchat");
 const config = require("./config");
 
-var credentials = {
-  account: process.env.ACCOUNT,
-  password: process.env.PASSWORD
-}
-
-var fchat = new Fchat(config, credentials);
-fchat.connect(process.env.CHARACTER);
+var fchat = new Fchat(config);
+fchat.connect(process.env.ACCOUNT, process.env.PASSWORD, process.env.CHARACTER);
 
 fchat.onOpen(ticket => {
   console.log(`Websocket connection opened. Identifying with ticket: ${ticket}`);

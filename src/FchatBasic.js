@@ -3,25 +3,24 @@ import fetch from "node-fetch";
 import { URLSearchParams } from "url";
 
 export default class FchatBasic {
-  constructor(config, credentials) {
+  constructor(config) {
     this.config = config;
-    this.credentials = credentials;
 
     this.serverVariables = {};
     this.user = {};
     this.commandCallbackMap = {};
   }
 
-  async connect(character, providedTicket) {
+  async connect(account, password, character, providedTicket) {
     this.user.character = character;
 
     try {
       this.disconnect(); //Attempt a disconnect if the socket is not null
 
-      var ticket = providedTicket || await this.requestTicket(); //Use the ticket provided if it exists, otherwise request a new one
+      var ticket = providedTicket || await this.requestTicket(account, password); //Use the ticket provided if it exists, otherwise request a new one
 
       this.socket = new ws(this.config.fchat.url);
-      this.socket.on('open', () => this.socketOnOpen(character, ticket));
+      this.socket.on('open', () => this.socketOnOpen(character, account, ticket));
       this.socket.on('message', message => this.socketOnMessage(message));
       this.socket.on('close', () => this.socketOnClose());
       this.socket.on('error', error => this.handleError(error));
@@ -30,10 +29,10 @@ export default class FchatBasic {
     }
   }
   
-  async requestTicket() {
+  async requestTicket(account, password) {
     const form = new URLSearchParams();
-    form.append("account", this.credentials.account);
-    form.append("password", this.credentials.password);
+    form.append("account", account);
+    form.append("password", password);
 
     //Build url from base url and endpoint from config
     var apiConfig = this.config.api;
@@ -65,7 +64,7 @@ export default class FchatBasic {
     }
   }
 
-  socketOnOpen(character, ticket) {
+  socketOnOpen(character, account, ticket) {
     if (this.openCallback) {
       this.openCallback(ticket);
     }
@@ -75,8 +74,8 @@ export default class FchatBasic {
     //Send an IDN command for identifying with the server, all fields here are required
     this.send('IDN', {
       method: 'ticket', 
-      account: this.credentials.account, 
-      ticket: ticket, 
+      account, 
+      ticket, 
       cname: client.name, 
       cversion: client.version,
       character
@@ -84,6 +83,10 @@ export default class FchatBasic {
   }
 
   socketOnMessage(message) {
+    if (this.config.fchat.options.debug) {
+      console.log("<< " + message);
+    }
+
     if (this.messageCallback) {
       this.messageCallback(message);
     }
@@ -121,6 +124,10 @@ export default class FchatBasic {
   send(command, body) {
     var message = body ? command + ' ' + JSON.stringify(body) : command; //Build the message to be send to the server
     
+    if (this.config.fchat.options.debug) {
+      console.log(">> " + message);
+    }
+
     if (this.socket) {
       this.socket.send(message);
     }
