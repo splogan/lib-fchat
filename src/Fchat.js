@@ -69,8 +69,6 @@ export default class Fchat extends FchatBasic {
         chan.users.push(character.identity);
       }
     }
-
-    console.log(this.channels);
   }
 
   //An indicator that the given character has left the channel. This may also be the client's character.
@@ -79,16 +77,11 @@ export default class Fchat extends FchatBasic {
     if (chan) {
       if (character === this.user.character) { //Client is leaving, so remove the channel
         delete this.channels[channel.toLowerCase()];
-      }else { //A character is leaving, so remove this character from the channel's list of users
-        console.log(character);
-        console.log(chan.users);
+      }else { 
+        //A character is leaving, so remove this character from the channel's list of users
         chan.users = chan.users.filter(user => user !== character);
-        console.log(chan.users);
-
       }
     }
-
-    console.log(this.channels);
   }
 
   //Initial channel data. Received in response to JCH, along with CDS.
@@ -98,21 +91,14 @@ export default class Fchat extends FchatBasic {
       chan.users = users.map(data => data.identity)
       chan.mode = mode;
     }
-
-    console.log(this.channels);
   }
 
   //Alerts the client that that the channel's description has changed. This is sent whenever a client sends a JCH to the server.
   onCDS({ channel, description }) {
-    console.log(channel);
     var chan = this.channels[channel.toLowerCase()];
-    console.log(chan);
     if (chan) {
       chan.description = description;
-      console.log(chan.description);
     }
-
-    console.log(this.channels);
   }
 
   //Gives a list of channel ops. Sent in response to JCH.
@@ -135,8 +121,6 @@ export default class Fchat extends FchatBasic {
     if (chan && !chan.chanops.includes(character)) {
       chan.chanops.push(character);
     }
-
-    console.log(this.channels);
   }
   
   //This command requires channel op or higher. Removes a channel operator.
@@ -145,8 +129,6 @@ export default class Fchat extends FchatBasic {
     if (chan) {
       chan.chanops = chan.chanops.filter(op => op != character);
     }
-
-    console.log(this.channels);
   }
 
   //Sets the owner of the current channel to the character provided.
@@ -155,8 +137,6 @@ export default class Fchat extends FchatBasic {
     if (chan) {
       chan.owner = character;
     }
-
-    console.log(this.channels);
   }
 
   //Change room mode to accept chat, ads, or both.
@@ -165,8 +145,6 @@ export default class Fchat extends FchatBasic {
     if (chan) {
       chan.mode = mode;
     }
-
-    console.log(this.channels);
   }
 
   //Sends the client the current list of chatops.
