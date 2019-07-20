@@ -1,6 +1,6 @@
 {
   "name": "lib-fchat",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "A node js library for creating f-chat clients and making requests to f-list api endpoints",
   "author": "Sid",
   "files": [
